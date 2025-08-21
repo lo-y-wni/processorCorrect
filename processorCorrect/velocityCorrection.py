@@ -392,21 +392,41 @@ def retrieveNyqs(radar,sweep_slice,sweepNum):
             #Determine the integer components of the ratio such that prtRatio = m+1/m
             if prtRatio > 1:
                 m = int(1/(prtRatio-1))
+                vLow,vHigh = vHigh/(m+1),vHigh/m
             elif prtRatio < 1:
                 m = int(1/(1-prtRatio))
+                vLow,vHigh = vHigh/m,vHigh/(m-1)
             else:
                 return np.inf,np.inf,np.inf
-            
-            vLow,vHigh = vHigh/(m+1),vHigh/m
 
         #Assume prt saved is prt for vHigh
         elif 'prt' in radar.instrument_parameters.keys():
+            def checkNyquist(vLow,vHigh):
+                dv = vHigh - vLow
+                a = round(vLow / dv)
+                b = round(vHigh / dv)
+
+                if (a,b) in [(4,5), (3,4)]:
+                    return True
+                else:
+                    return False
+
             prt = radar.instrument_parameters['prt']['data'][sweep_slice][0]
             freq = radar.instrument_parameters['frequency']['data'][0]
             wavelength = 3e8 / freq
             vHigh = wavelength / (4 * prt)
 
             #vLow is dual PRF Nyquist here
-            vLow = vLow / round(vLow / vHigh + 1)
+            vPRF = vLow
+            vLow = vPRF / round(vPRF / vHigh + 1)
+
+            #check vHigh, vLow make sense
+            if not checkNyquist(vLow,vHigh):
+                print("prt is for vLow not vHigh.")
+                vLow = vHigh
+                vHigh = vPRF / round(vPRF / vLow - 1)
+
+                if not checkNyquist(vLow,vHigh):
+                    raise ValueError("prt is not for either vLow or vHigh. Cannot determine Nyquist velocities.")
 
     return vLow,vHigh,vLow+vHigh
