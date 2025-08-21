@@ -2,10 +2,10 @@
 
 from setuptools import setup,find_packages
 #from distutils.core import setup
-from distutils.extension import Extension
-from Cython.Build import cythonize
+#from distutils.extension import Extension
+#from Cython.Build import cythonize
 import numpy
-import os
+#import os
 
 
 #Builds the raddison package. Also builds the delaunay shared library upon
