@@ -1,1 +1,1 @@
-from .velocityCorrection import errorCorrect
+from .velocityCorrection import error_correct
