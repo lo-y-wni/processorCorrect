@@ -64,7 +64,8 @@ def smooth_vel(vel, nyq, spatial, filter_size):
     vel_smooth[vel_smooth < -1000] = np.nan
     
     # Create difference field
-    diff = vel.filled(fill_value=np.nan) - vel_smooth
+    diff = np.angle(complex_vel * vel_smooth_complex.conj()) * nyq / np.pi
+    #diff = vel.filled(fill_value=np.nan) - vel_smooth
     
     return vel_smooth, diff
 
@@ -330,10 +331,10 @@ def retrieve_nyqs(radar, sweep_slice, sweep_num):
             
             # Determine integer components of ratio
             if prt_ratio > 1:
-                m = int(1 / (prt_ratio - 1))
+                m = round(1 / (prt_ratio - 1))
                 v_low, v_high = v_high / (m + 1), v_high / m
             elif prt_ratio < 1:
-                m = int(1 / (1 - prt_ratio))
+                m = round(1 / (1 - prt_ratio))
                 v_low, v_high = v_high / m, v_high / (m - 1)
             else:
                 return np.inf, np.inf, np.inf
